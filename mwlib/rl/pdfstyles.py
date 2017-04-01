@@ -62,7 +62,7 @@ title_margin_bottom = page_margin_bottom
 
 show_title_page = True
 show_title_page_footer = True
-show_page_header = True 
+show_page_header = True
 show_page_footer = True
 page_break_after_article = False
 
@@ -102,7 +102,7 @@ render_toc = True
 
 ### TABLE CONFIG
 
-tableOverflowTolerance = 20  # max width overflow for tables    unit: pt 
+tableOverflowTolerance = 20  # max width overflow for tables    unit: pt
 cell_padding = 3
 min_rows_for_break = 3 # page breaks before tables are only forced if more than n rows are present
 
@@ -198,7 +198,7 @@ class BaseStyle(ParagraphStyle):
         self.backColor = None
         self.wordWrap = None
         self.textTransform = None
-        
+
 def text_style(mode='p', indent_lvl=0, in_table=0, relsize='normal', text_align=None):
     """
     mode: p (normal paragraph), blockquote, center (centered paragraph), footer, figure (figure caption text),
@@ -252,7 +252,7 @@ def text_style(mode='p', indent_lvl=0, in_table=0, relsize='normal', text_align=
 
     if mode == 'img_attribution':
         style.spaceBefore = 2
-        
+
     if mode in ['articlefoot', 'references']:
         style.fontSize=small_font_size
         style.leading=small_leading
@@ -263,11 +263,11 @@ def text_style(mode='p', indent_lvl=0, in_table=0, relsize='normal', text_align=
         style.borderPadding = 3 # borderPadding is not calculated onto the box dimensions.
         style.spaceBefore = 6 # therefore spaceBefore = 3 + borderPadding
         style.spaceAfter = 9 # add an extra 3 to spaceAfter, b/c spacing seems to small otherwise
-    
+
     if mode == 'source' or mode == 'preformatted':
-        style.fontName = mono_font   
+        style.fontName = mono_font
         style.flowable = False
-        
+
     if mode == 'list' or mode == 'references':
         style.spaceBefore = 0
         style.bulletIndent = list_left_indent * max(0, indent_lvl-1)
@@ -281,7 +281,7 @@ def text_style(mode='p', indent_lvl=0, in_table=0, relsize='normal', text_align=
         style.spaceBefore = 16
         style.fontName= sans_font
         style.alignment = TA_LEFT
-        
+
     if mode == 'booksubtitle':
         style.fontSize = 24
         style.leading = 30
@@ -313,15 +313,35 @@ def text_style(mode='p', indent_lvl=0, in_table=0, relsize='normal', text_align=
     if mode == 'toc_group':
         style.fontSize = 18
         style.leading = 22
-       
+
     if mode == 'toc_chapter':
         style.fontSize = 14
         style.leading = 18
-        
+
     if mode == 'toc_article':
         style.fontSize = 10
         style.leading = 12
         style.leftIndent = para_left_indent
+
+    if mode == 'toc_heading1':
+        style.fontSize = 10
+        style.leading = 12
+        style.leftIndent = para_left_indent * 2
+
+    if mode == 'toc_heading2':
+        style.fontSize = 10
+        style.leading = 12
+        style.leftIndent = para_left_indent * 3
+
+    if mode == 'toc_heading3':
+        style.fontSize = 10
+        style.leading = 12
+        style.leftIndent = para_left_indent * 4
+
+    if mode == 'toc_heading4':
+        style.fontSize = 10
+        style.leading = 12
+        style.leftIndent = para_left_indent * 5
 
     return style
 
@@ -340,7 +360,7 @@ class BaseHeadingStyle(ParagraphStyle):
         self.leftIndent = 0
         self.rightIndent = 0
         self.firstLineIndent = 0
-        self.alignment = TA_LEFT        
+        self.alignment = TA_LEFT
         self.spaceBefore = 12
         self.spaceAfter = 6
         self.bulletFontName = serif_font
@@ -352,7 +372,7 @@ class BaseHeadingStyle(ParagraphStyle):
         self.textTransform = None
         #self.allowWidows = 0
         #self.allowOrphans = 0
-        
+
 def heading_style(mode='chapter', lvl=1, text_align=None):
 
     style = BaseHeadingStyle(name='heading_style_%s_%d' % (mode, lvl))
@@ -372,7 +392,7 @@ def heading_style(mode='chapter', lvl=1, text_align=None):
         style.spaceBefore = 20
         style.spaceAfter = 2
     elif mode == 'section':
-        lvl = max(min(5,lvl), 1)  
+        lvl = max(min(5,lvl), 1)
         style.fontSize = 18 - (lvl - 1) * 2
         style.leading = style.fontSize + max(2, min(int(style.fontSize / 5), 3)) # magic: increase in leading is between 2 and 3 depending on fontsize...
         style.spaceBefore = min(style.leading, 20)
@@ -398,10 +418,10 @@ def heading_style(mode='chapter', lvl=1, text_align=None):
         style.alignment = TA_RIGHT
     elif text_align == 'justify':
         style.alignment = TA_JUSTIFY
-    
+
     style.prevent_post_pagebreak = True
     return style
-    
+
 
 # import custom configuration to override configuration values
 # if doing so, you need to be careful not to break things...

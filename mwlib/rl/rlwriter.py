@@ -680,13 +680,16 @@ class RlWriter(object):
             heading_txt = ''
         self.formatter.sectiontitle_mode = False
 
-        if 1 <= lvl <= 4 and self.inline_mode == 0 and self.table_nesting==0:
+        if 1 <= lvl <= 5 and self.inline_mode == 0 and self.table_nesting==0:
             anchor = '<a name="%d"/>' % len(self.bookmarks)
             bm_type = 'article' if lvl==1 else 'heading%s' % lvl
             self.bookmarks.append((obj.children[0].getAllDisplayText(), bm_type))
         else:
             anchor = ''
         elements = [Paragraph('<font name="%s"><b>%s</b></font>%s' % (headingStyle.fontName, heading_txt, anchor), headingStyle)]
+
+        if 2 <= lvl <= 5:
+            elements.append(TocEntry(txt=heading_txt, lvl='heading%s' % lvl))
 
         if self.table_size_calc == 0:
             obj.removeChild(obj.children[0])
@@ -830,7 +833,7 @@ class RlWriter(object):
 
         heading_para = Paragraph('<b>%s</b>%s' % (title, heading_anchor), heading_style("article"))
         elements.append(heading_para)
-        elements.append(TocEntry(txt=title, lvl='article'))
+        elements.append(TocEntry(txt=title or article.caption, lvl='article'))
 
         if pdfstyles.show_article_hr:
             elements.append(HRFlowable(width='100%', hAlign='LEFT', thickness=1, spaceBefore=0, spaceAfter=10, color=colors.black))

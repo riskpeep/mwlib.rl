@@ -202,9 +202,10 @@ class PPDocTemplate(BaseDocTemplate):
 
         type2lvl = {'chapter': 0,
                     'article': 1,
-                    'heading2': 2,
-                    'heading3': 3,
-                    'heading4': 4,
+                    'heading1': 2,
+                    'heading2': 3,
+                    'heading3': 4,
+                    'heading4': 5,
                     }
         got_chapter = False
         last_lvl =  0

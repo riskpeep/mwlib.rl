@@ -26,7 +26,7 @@ class TocRenderer(object):
         font_switcher.registerFontDefinitionList(fontconfig.fonts)
         font_switcher.registerReportlabFonts(fontconfig.fonts)
 
-        
+
     def build(self, pdfpath, toc_entries, has_title_page=False, rtl=False):
         outpath = os.path.dirname(pdfpath)
         tocpath = os.path.join(outpath, 'toc.pdf')
@@ -35,11 +35,11 @@ class TocRenderer(object):
         return self.combinePdfs(pdfpath, tocpath, finalpath, has_title_page)
 
     def _getColWidths(self):
-        p = Paragraph('<b>%d</b>' % 9999, pdfstyles.text_style(mode='toc_article', text_align='right'))        
+        p = Paragraph('<b>%d</b>' % 9999, pdfstyles.text_style(mode='toc_article', text_align='right'))
         w, h = p.wrap(0, pdfstyles.print_height)
         # subtracting 30pt below is *probably* necessary b/c of the table margins
         return [pdfstyles.print_width - w - 30, w]
-    
+
     def renderToc(self, tocpath, toc_entries, rtl):
         doc = SimpleDocTemplate(tocpath, pagesize=(pdfstyles.page_width, pdfstyles.page_height))
         elements = []
@@ -48,7 +48,7 @@ class TocRenderer(object):
         styles = []
         col_widths = self._getColWidths()
         for row_idx, (lvl, txt, page_num) in enumerate(toc_entries):
-            if lvl == 'article':
+            if lvl == 'article' or lvl.startswith('heading'):
                 page_num = str(page_num)
             elif lvl == 'chapter':
                 page_num = '<b>%d</b>' % page_num
