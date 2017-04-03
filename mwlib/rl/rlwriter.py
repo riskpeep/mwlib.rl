@@ -63,12 +63,12 @@ from reportlab.platypus.xpreformatted import XPreformatted
 from reportlab.lib.units import cm
 from reportlab.lib import colors
 from reportlab.lib.enums import TA_CENTER, TA_JUSTIFY, TA_RIGHT, TA_LEFT
+from reportlab.lib.pagesizes import A0, A1, A2, A3, A4, A5, A6, LETTER, LEGAL, ELEVENSEVENTEEN, B0, B1, B2, B3, B4, B5, B6
 
 from mwlib.rl.customflowables import Figure, FiguresAndParagraphs, SmartKeepTogether, TocEntry, DummyTable
 
 from pdfstyles import text_style, heading_style, table_style
 
-from pdfstyles import print_width, print_height
 import pdfstyles
 
 from mwlib.writer.imageutils import ImageUtils
@@ -183,6 +183,17 @@ class RlWriter(object):
         else:
             self.imgDB = None
 
+        try:
+            passed_page_size_string = str(self.book.papersize).upper()
+            passed_page_size = globals()[passed_page_size_string]
+            pdfstyles.page_width, pdfstyles.page_height = passed_page_size
+        except: #KeyError
+            # Take the default from pdfstyles
+            pass
+
+        pdfstyles.print_width = pdfstyles.page_width - pdfstyles.page_margin_left - pdfstyles.page_margin_right
+        pdfstyles.print_height = pdfstyles.page_height - pdfstyles.page_margin_top - pdfstyles.page_margin_bottom
+
         self.strict = strict
         self.debug = debug
         self.test_mode = test_mode
@@ -252,7 +263,7 @@ class RlWriter(object):
         self.articleids = []
         self.layout_status = None
         self.toc_entries = []
-        self.toc_renderer = TocRenderer()
+        self.toc_renderer = TocRenderer(pdfstyles.print_width, pdfstyles.print_height)
         self.reference_list_rendered = False
         self.article_meta_info = []
         self.url_map = {}
@@ -285,11 +296,11 @@ class RlWriter(object):
                 last = group[-1]
                 if not isHeading(last):
                     try:
-                        w, h = last.wrap(print_width, print_height)
+                        w, h = last.wrap(pdfstyles.print_width, pdfstyles.print_height)
                     except:
                         h = 0
                     groupHeight += h
-                    if groupHeight > print_height / 10 or isinstance(elements[0], NotAtTopPageBreak): # 10 % of page_height
+                    if groupHeight > pdfstyles.print_height / 10 or isinstance(elements[0], NotAtTopPageBreak): # 10 % of page_height
                         groupedElements.append(SmartKeepTogether(group))
                         group = []
                         groupHeight = 0
@@ -455,7 +466,7 @@ class RlWriter(object):
             return False
 
     def addDummyPage(self):
-        pt = WikiPage('')
+        pt = WikiPage('', pagesize=(pdfstyles.page_width, pdfstyles.page_height), print_width=pdfstyles.print_width, print_height=pdfstyles.print_height)
         self.doc.addPageTemplates(pt)
         return Paragraph(' ', text_style())
 
@@ -626,21 +637,21 @@ class RlWriter(object):
             if item.type == 'article':
                 first_article_title = self.renderArticleTitle(item.displaytitle or item.title)
                 break
-        self.doc.addPageTemplates(TitlePage(cover=coverimage))
+        self.doc.addPageTemplates(TitlePage(cover=coverimage, pagesize=(pdfstyles.page_width, pdfstyles.page_height), print_width=pdfstyles.print_width, print_height=pdfstyles.print_height))
         elements = []
         elements.append(Paragraph(self.formatter.cleanText(title), text_style(mode='booktitle')))
         if subtitle:
             elements.append(Paragraph(self.formatter.cleanText(subtitle), text_style(mode='booksubtitle')))
         if not first_article_title:
             return elements
-        self.doc.addPageTemplates(WikiPage(first_article_title, rtl=self.rtl))
+        self.doc.addPageTemplates(WikiPage(first_article_title, rtl=self.rtl, pagesize=(pdfstyles.page_width, pdfstyles.page_height), print_width=pdfstyles.print_width, print_height=pdfstyles.print_height))
         elements.append(NextPageTemplate(first_article_title.encode('utf-8')))
         elements.append(PageBreak())
         return elements
 
     def _getPageTemplate(self, title):
         template_title =self.renderArticleTitle(title)
-        page_template = WikiPage(template_title, rtl=self.rtl)
+        page_template = WikiPage(template_title, rtl=self.rtl, pagesize=(pdfstyles.page_width, pdfstyles.page_height), print_width=pdfstyles.print_width, print_height=pdfstyles.print_height)
         self.doc.addPageTemplates(page_template)
         return NextPageTemplate(template_title.encode('utf-8'))
 
@@ -923,7 +934,7 @@ class RlWriter(object):
                 maxImgWidth = max(maxImgWidth, f.imgWidth)
             for p in paras:
                 if isinstance(p,Paragraph):
-                    w,h = p.wrap(print_width - maxImgWidth, print_height)
+                    w,h = p.wrap(pdfstyles.print_width - maxImgWidth, pdfstyles.print_height)
                     h += p.style.spaceBefore + p.style.spaceAfter
                     hp += h
             if hp > hf - 10:
@@ -1000,7 +1011,7 @@ class RlWriter(object):
             scaled_images = []
             for img in images:
                 ar = img.imgWidth/img.imgHeight
-                w = print_width / 2 - (img.margin[1] + img.margin[3] + img.padding[1] + img.padding[3])
+                w = pdfstyles.print_width / 2 - (img.margin[1] + img.margin[3] + img.padding[1] + img.padding[3])
                 h = w/ar
                 if w > img.imgWidth:
                     scaled = img
@@ -1468,12 +1479,12 @@ class RlWriter(object):
         if self.table_nesting > 0 and not max_width:
             cell = img_node.getParentNodesByClass(advtree.Cell)
             if cell:
-                max_width = print_width / len(cell[0].getAllSiblings()) - 10
+                max_width = pdfstyles.print_width / len(cell[0].getAllSiblings()) - 10
         max_height = pdfstyles.img_max_thumb_height * pdfstyles.print_height
         if self.table_nesting > 0:
-            max_height = print_height/4 # fixme this needs to be read from config
+            max_height = pdfstyles.print_height/4 # fixme this needs to be read from config
         if self.gallery_mode:
-            max_height = print_height/3 # same as above
+            max_height = pdfstyles.print_height/3 # same as above
 
         self.set_svg_default_size(img_node)
 
@@ -1560,7 +1571,7 @@ class RlWriter(object):
         data = []
         row = []
         if obj.children:
-            self.colwidth = print_width/perrow - 12
+            self.colwidth = pdfstyles.print_width/perrow - 12
         colwidths = [self.colwidth+12]*perrow
 
         for node in obj.children:

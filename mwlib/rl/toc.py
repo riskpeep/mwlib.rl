@@ -19,12 +19,14 @@ from mwlib.rl import fontconfig
 
 class TocRenderer(object):
 
-    def __init__(self):
+    def __init__(self, print_width, print_height):
         font_switcher = fontconfig.RLFontSwitcher()
         font_switcher.font_paths = fontconfig.font_paths
         font_switcher.registerDefaultFont(pdfstyles.default_font)
         font_switcher.registerFontDefinitionList(fontconfig.fonts)
         font_switcher.registerReportlabFonts(fontconfig.fonts)
+        self.print_width = print_width
+        self.print_height = print_height
 
 
     def build(self, pdfpath, toc_entries, has_title_page=False, rtl=False):
@@ -36,9 +38,9 @@ class TocRenderer(object):
 
     def _getColWidths(self):
         p = Paragraph('<b>%d</b>' % 9999, pdfstyles.text_style(mode='toc_article', text_align='right'))
-        w, h = p.wrap(0, pdfstyles.print_height)
+        w, h = p.wrap(0, self.print_height)
         # subtracting 30pt below is *probably* necessary b/c of the table margins
-        return [pdfstyles.print_width - w - 30, w]
+        return [self.print_width - w - 30, w]
 
     def renderToc(self, tocpath, toc_entries, rtl):
         doc = SimpleDocTemplate(tocpath, pagesize=(pdfstyles.page_width, pdfstyles.page_height))
