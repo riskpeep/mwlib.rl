@@ -100,6 +100,10 @@ creation_date_txt = 'PDF generated at: %s'
 # note that no TOC is generated if only one article is rendered
 render_toc = True
 
+# indicates the heading levels that should be included in the toc
+# [0] = Chapter, [1] = Article, [2-5] = Heading 1-4
+render_toc_levels = (1,1,0,1,1,1)
+
 ### TABLE CONFIG
 
 tableOverflowTolerance = 20  # max width overflow for tables    unit: pt
@@ -326,22 +330,22 @@ def text_style(mode='p', indent_lvl=0, in_table=0, relsize='normal', text_align=
     if mode == 'toc_heading1':
         style.fontSize = 10
         style.leading = 12
-        style.leftIndent = para_left_indent * 2
+        style.leftIndent = para_left_indent * sum(render_toc_levels[1:3])
 
     if mode == 'toc_heading2':
         style.fontSize = 10
         style.leading = 12
-        style.leftIndent = para_left_indent * 3
+        style.leftIndent = para_left_indent * sum(render_toc_levels[1:4])
 
     if mode == 'toc_heading3':
         style.fontSize = 10
         style.leading = 12
-        style.leftIndent = para_left_indent * 4
+        style.leftIndent = para_left_indent * sum(render_toc_levels[1:5])
 
     if mode == 'toc_heading4':
         style.fontSize = 10
         style.leading = 12
-        style.leftIndent = para_left_indent * 5
+        style.leftIndent = para_left_indent * sum(render_toc_levels[1:6])
 
     return style
 
